@@ -1,0 +1,22 @@
+{
+  "name": "test-pokedex-explorer-gaction",
+  "version": "0.0.1",
+  "description": "A gaction fulfillment for exploring the pokedex",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bericp1/test-pokedex-explorer-gaction.git"
+  },
+  "author": "bericp1",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bericp1/test-pokedex-explorer-gaction/issues"
+  },
+  "homepage": "https://github.com/bericp1/test-pokedex-explorer-gaction#readme",
+  "dependencies": {
+    "request": "^2.79.0"
+  }
+}
