@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/bericp1/test-pokedex-explorer-gaction#readme",
   "dependencies": {
-    "request": "^2.79.0"
+    "actions-on-google": "^1.0.3",
+    "node-fetch": "^1.6.3"
   }
 }
