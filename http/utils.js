@@ -26,10 +26,14 @@ const apiGatewayHandlerWrapper = function(handler) {
 
     promise
       .then((resp) => {
+        if(!(resp instanceof Response) && typeof resp === 'object' && resp !== null)
+          resp = new Response(resp, 200);
+
         if(resp instanceof Response) {
           callback(null, resp.toApiGatewayResponse());
         } else {
-          callback(null, resp);
+          console.error('Invalid response', resp);
+          throw new Error('Invalid response.');
         }
       })
       .catch((err) => {
