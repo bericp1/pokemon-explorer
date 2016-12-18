@@ -1,10 +1,10 @@
 'use strict';
 
-const pokemon = require('./pokemon'),
-  ai = require('./ai'),
-  httpUtils = require('./http/utils'),
+const pokemon = require('./repository'),
+  ai = require('../ai/index'),
+  httpUtils = require('../http/utils'),
   wrap = httpUtils.apiGatewayHandlerWrapper,
-  Response = require('./http/Response').Response;
+  Response = require('../http/Response').Response;
 
 module.exports.status = wrap((event) => {
   return new Response({status: 'ok'}, {event});

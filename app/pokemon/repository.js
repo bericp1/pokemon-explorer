@@ -4,7 +4,7 @@ const SPECIES_MAX = 721,
   API_BASE = 'https://pokeapi.co/api/v2';
 
 const fetch = require('node-fetch'),
-  httpUtils = require('../http/utils'),
+  httpUtils = require('./utils'),
   checkStatus = httpUtils.checkStatus,
   parseJson = httpUtils.parseJSON;
 
