@@ -19,15 +19,17 @@
  * http://sailsjs.org/#!/documentation/reference/sails.config/sails.config.connections.html
  */
 
+const fs = require('fs'),
+  path = require('path'),
+  ssl_base_path = path.join(__dirname, 'ssl'),
+  ssl_gcloud_sql_base_path = path.join(ssl_base_path, 'gcloud_sql');
+
+const safeGetFromFileWithBase = function(base, file, def) {
+  return (fs.existsSync(base) ? fs.readFileSync(path.join(base, '/' + file)) : '');
+};
+
 module.exports.connections = {
 
-  /***************************************************************************
-  *                                                                          *
-  * Local disk storage for DEVELOPMENT ONLY                                  *
-  *                                                                          *
-  * Installed by default.                                                    *
-  *                                                                          *
-  ***************************************************************************/
   localDiskDb: {
     adapter: 'sails-disk'
   },
@@ -40,53 +42,18 @@ module.exports.connections = {
   * Run: npm install sails-mysql                                             *
   *                                                                          *
   ***************************************************************************/
-  // someMysqlServer: {
-  //   adapter: 'sails-mysql',
-  //   host: 'YOUR_MYSQL_SERVER_HOSTNAME_OR_IP_ADDRESS',
-  //   user: 'YOUR_MYSQL_USER', //optional
-  //   password: 'YOUR_MYSQL_PASSWORD', //optional
-  //   database: 'YOUR_MYSQL_DB' //optional
-  // },
+  googleCloudSQL: {
+    adapter: 'sails-mysql',
+    host: '104.154.59.39',
+    port: 3306,
+    user: 'pokemonexplorer',
+    password: process.env.GOOGLE_CLOUDSQL_PASSWORD || '',
+    database: 'pokedex',
 
-  /***************************************************************************
-  *                                                                          *
-  * MongoDB is the leading NoSQL database.                                   *
-  * http://en.wikipedia.org/wiki/MongoDB                                     *
-  *                                                                          *
-  * Run: npm install sails-mongo                                             *
-  *                                                                          *
-  ***************************************************************************/
-  // someMongodbServer: {
-  //   adapter: 'sails-mongo',
-  //   host: 'localhost',
-  //   port: 27017,
-  //   user: 'username', //optional
-  //   password: 'password', //optional
-  //   database: 'your_mongo_db_name_here' //optional
-  // },
-
-  /***************************************************************************
-  *                                                                          *
-  * PostgreSQL is another officially supported relational database.          *
-  * http://en.wikipedia.org/wiki/PostgreSQL                                  *
-  *                                                                          *
-  * Run: npm install sails-postgresql                                        *
-  *                                                                          *
-  *                                                                          *
-  ***************************************************************************/
-  // somePostgresqlServer: {
-  //   adapter: 'sails-postgresql',
-  //   host: 'YOUR_POSTGRES_SERVER_HOSTNAME_OR_IP_ADDRESS',
-  //   user: 'YOUR_POSTGRES_USER', // optional
-  //   password: 'YOUR_POSTGRES_PASSWORD', // optional
-  //   database: 'YOUR_POSTGRES_DB' //optional
-  // }
-
-
-  /***************************************************************************
-  *                                                                          *
-  * More adapters: https://github.com/balderdashy/sails                      *
-  *                                                                          *
-  ***************************************************************************/
-
+    ssl  : {
+      key: process.env.GOOGLE_CLOUDSQL_SSL_KEY || safeGetFromFileWithBase(ssl_gcloud_sql_base_path, 'client-key.pem'),
+      cert: process.env.GOOGLE_CLOUDSQL_SSL_CERT || safeGetFromFileWithBase(ssl_gcloud_sql_base_path, 'client-cert.pem'),
+      ca : process.env.GOOGLE_CLOUDSQL_SSL_CA || safeGetFromFileWithBase(ssl_gcloud_sql_base_path, 'server-ca.pem')
+    }
+  }
 };
