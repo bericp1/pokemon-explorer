@@ -33,25 +33,67 @@ const toErrorSpeechResponse = function(err) {
   );
 };
 
+const contextualizeSpeciesResponse = function(output, species) {
+  return new SpeechResponse(output, output, {
+    contextOut: [
+      {
+        "name": "subjecting-pokemon-species",
+        "lifespan": 1,
+        "parameters": {"species": species.id}
+      }
+    ]
+  });
+};
+
+const describeAndContextualizeSpecies = function(species) {
+  return contextualizeSpeciesResponse(pokemon.describeSpecies(species), species);
+};
+
 const actions = {
+
   random_pokemon: function(params, body) {
     return pokemon.getRandomSpecies()
-      .then(pokemon.describeSpecies);
+      .then(describeAndContextualizeSpecies)
   },
+
   random_pokemon_of_type: function(params, body) {
     if(!params['type'])
-      return Promise.resolve('What type pokemon should I find?');
+      return Promise.resolve('What type pokemon should I find?')
 
     return pokemon.getRandomSpeciesByType(params['type'])
-      .then(pokemon.describeSpecies);
+      .then(describeAndContextualizeSpecies)
   },
+
   random_pokemon_of_color: function(params, body) {
     if(!params['color'])
-      return Promise.resolve('What color pokemon should I find?');
+      return Promise.resolve('What color pokemon should I find?')
 
     return pokemon.getRandomSpeciesByColor(params['color'])
-      .then(pokemon.describeSpecies);
-    },
+      .then(describeAndContextualizeSpecies)
+  },
+
+  get_species_color: function(params, body) {
+    let id;
+    if(!params['species'] || isNaN(id = parseInt(params['species'])))
+      return Promise.resolve('Which species?');
+
+    return pokemon.getSpecies(id)
+      .then((species) => {
+        return contextualizeSpeciesResponse(pokemon.describeSpeciesColor(species), species);
+      });
+  },
+
+  get_species_evolves_from: function(params, body) {
+    let id;
+    if(!params['species'] || isNaN(id = parseInt(params['species'])))
+      return Promise.resolve('Which species?');
+
+    return pokemon.getSpecies(id)
+      .then((species) => {
+        return contextualizeSpeciesResponse(pokemon.describeSpeciesEvolvesFrom(species), species);
+      });
+  }
+
 };
 
 const resolve = function(body) {
@@ -70,7 +112,12 @@ const resolve = function(body) {
 
   if(actions.hasOwnProperty(action))
     return actions[action](params, body)
-      .then(toSpeechResponse)
+      .then((data) => {
+        if(data instanceof SpeechResponse)
+          return data;
+        else
+          return toSpeechResponse(data);
+      })
       .catch(toErrorSpeechResponse);
   else
     return toPromisedSpeechResponse(

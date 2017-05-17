@@ -45,10 +45,17 @@ const doFetchFromApi = (endpoint, opts) => {
 };
 
 /**
+ * @param {number} id
+ */
+const getSpecies = function(id) {
+  return doFetchFromApi('/pokemon-species/' + parseInt(id));
+};
+
+/**
  * @returns {Promise}
  */
 const getRandomSpecies = function() {
-  return doFetchFromApi('/pokemon-species/' + randomSpeciesId());
+  return getSpecies(randomSpeciesId());
 };
 
 /**
@@ -210,6 +217,20 @@ const describeSpecies = function(species) {
   return text;
 };
 
+const describeSpeciesColor = function(species) {
+  console.dir(species);
+  return species.name + ' is a ' + species.color.name + ' pokemon.';
+};
+
+const describeSpeciesEvolvesFrom = function(species) {
+  return species.name + ' ' +
+    (
+      (species.evolves_from_species && species.evolves_from_species !== null && species.evolves_from_species.name) ?
+      ('evolves from ' + species.evolves_from_species.name + '.') :
+      (Math.random() <= 0.5 ? 'is unevolved.' : 'is the first pokemon in its evolution chain.')
+    );
+};
+
 // TODO Handle errors
 const resolve = function(query) {
   console.dir(query);
@@ -230,11 +251,14 @@ module.exports = exports = {
   doFetchFromApi,
   readFromAPICache,
 
+  getSpecies,
   getRandomSpecies,
   getRandomSpeciesByColor,
   getRandomSpeciesByType,
   getPokemonFromSpecies,
   describeSpecies,
+  describeSpeciesColor,
+  describeSpeciesEvolvesFrom,
 
   getRandomPokemon,
   getRandomPokemonByType,

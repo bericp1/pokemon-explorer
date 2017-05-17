@@ -1,6 +1,6 @@
 'use strict';
 
-var Response = require('../http/Response').Response;
+const Response = require('../http/Response').Response;
 
 class SpeechResponse extends Response {
   constructor(text_to_speak, text_to_display, extra) {
