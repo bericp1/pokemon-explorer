@@ -8,7 +8,20 @@ const fetch = require('node-fetch'),
   checkStatus = httpUtils.checkStatus,
   parseJson = httpUtils.parseJSON;
 
+const PokemonTypeNotFoundError = require('./PokemonTypeNotFoundError'),
+  PokemonColorNotFoundError = require('./PokemonColorNotFoundError');
+
 const randomSpeciesId = () => '' + Math.ceil(Math.random() * SPECIES_MAX);
+
+const readFromAPICache = function(endpoint) {
+  const cache = require('./api.cache.json');
+  endpoint = endpoint.trim()
+    .toLowerCase()
+    .replace(/^\/+/g, '')
+    .replace(/\/+$/g, '');
+
+  return cache.hasOwnProperty(endpoint) ? cache[endpoint] : null;
+};
 
 /**
  * @param url
@@ -21,11 +34,19 @@ const doFetch = (url, opts) => {
     .then(parseJson);
 };
 
+const doFetchFromApi = (endpoint, opts) => {
+  const hit = readFromAPICache(endpoint);
+  if(hit)
+    return Promise.resolve(hit);
+  else
+    return doFetch((endpoint.indexOf('http') !== 0) ? (API_BASE + endpoint) : endpoint, opts);
+};
+
 /**
  * @returns {Promise}
  */
 const getRandomSpecies = function() {
-  return doFetch(API_BASE + '/pokemon-species/' + randomSpeciesId());
+  return doFetchFromApi('/pokemon-species/' + randomSpeciesId());
 };
 
 /**
@@ -37,11 +58,95 @@ const getPokemonFromSpecies = function(species) {
 };
 
 /**
+ * @param {string} type_name
+ * @returns {Promise}
+ */
+const getTypeByName = function(type_name) {
+  return doFetchFromApi('/type')
+    .then((response) => {
+      for(let type of response.results) {
+        if(type.name === type_name) {
+          return type;
+        }
+      }
+      return null;
+    });
+};
+
+/**
+ * @param {string} id
+ * @returns {Promise}
+ */
+const getType = function(id) {
+  return doFetchFromApi(`/type/${id}`);
+};
+
+/**
+ * @param {{pokemon: object[]}} type
+ * @returns {*}
+ */
+const pickRandomPokemonFromType = function(type) {
+  return type.pokemon[Math.floor(Math.random() * type.pokemon.length)].pokemon;
+};
+
+/**
  * @returns {Promise}
  */
 const getRandomPokemon = function() {
   return getRandomSpecies()
-    .then(getPokemonFromSpecies);
+    .then((species) => species.varieties[0].pokemon.url.replace(API_BASE, ''))
+    .then(doFetchFromApi);
+};
+
+/**
+ * @param {string} type_name
+ * @returns {Promise}
+ */
+const getRandomPokemonByType = function(type_name) {
+  return getTypeByName(type_name)
+    .then((type) => {
+      if(!type)
+        throw new PokemonTypeNotFoundError(type_name);
+      else
+        return doFetchFromApi(type.url.replace(API_BASE, ''));
+    })
+    .then(pickRandomPokemonFromType)
+    .then((pokemon) => pokemon.url.replace(API_BASE, ''))
+    .then(doFetchFromApi);
+};
+
+const getRandomSpeciesByType = function(type_name) {
+  return getRandomPokemonByType(type_name)
+    .then((pokemon) => doFetchFromApi(pokemon.species.url.replace(API_BASE, '')))
+}
+
+const getColorByName = function(color_name) {
+  return doFetchFromApi('/pokemon-color')
+    .then((response) => {
+      for(let color of response.results) {
+        if(color.name === color_name) {
+          return color;
+        }
+      }
+      return null;
+    });
+};
+
+const pickRandomSpeciesFromColor = function(color) {
+  return color.pokemon_species[Math.floor(Math.random() * color.pokemon_species.length)];
+};
+
+const getRandomSpeciesByColor = function(color_name) {
+  return getColorByName(color_name)
+    .then((color) => {
+      if(!color)
+        throw new PokemonColorNotFoundError(color_name);
+      else
+        return doFetchFromApi(color.url.replace(API_BASE, ''));
+    })
+    .then(pickRandomSpeciesFromColor)
+    .then((species) => species.url.replace(API_BASE, ''))
+    .then(doFetchFromApi);
 };
 
 const describeSpecies = function(species) {
@@ -103,9 +208,36 @@ const describeSpecies = function(species) {
   return text;
 };
 
+// TODO Handle errors
+const resolve = function(query) {
+  console.dir(query);
+
+  if(!query)
+    return getRandomSpecies();
+
+  if(query.color)
+    return getRandomSpeciesByColor(query.color);
+  else if(query.type)
+    return getRandomSpeciesByType(query.type);
+  else
+    return getRandomSpecies();
+};
+
 module.exports = {
+  doFetch: doFetch,
+  doFetchFromApi: doFetchFromApi,
+  readFromAPICache: readFromAPICache,
+
   getRandomSpecies: getRandomSpecies,
-  getRandomPokemon: getRandomPokemon,
+  getRandomSpeciesByColor: getRandomSpeciesByColor,
+  getRandomSpeciesByType: getRandomSpeciesByType,
   getPokemonFromSpecies: getPokemonFromSpecies,
   describeSpecies: describeSpecies,
+
+  getRandomPokemon: getRandomPokemon,
+  getRandomPokemonByType: getRandomPokemonByType,
+  getType: getType,
+  getTypeByName: getTypeByName,
+
+  resolve: resolve
 };

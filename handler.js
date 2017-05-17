@@ -6,17 +6,16 @@ const pokemon = require('./pokemon'),
   wrap = httpUtils.apiGatewayHandlerWrapper,
   Response = require('./http/Response').Response;
 
+
+
 module.exports.status = wrap((event) => {
-  return new Response({status: 'ok'}, {event});
+  return new Response(Object.assign({status: 'ok'}, {event}));
 });
 
-module.exports.random = wrap(() => {
-  return pokemon.getRandomSpecies();
+module.exports.random = wrap((event) => {
+  return pokemon.resolve(event.queryStringParameters);
 });
 
-module.exports.ai = wrap(() => {
-  return pokemon.getRandomSpecies()
-    .then(pokemon.describeSpecies)
-    .then(ai.toSpeechResponse)
-    .catch(ai.toErrorSpeechResponse);
+module.exports.ai = wrap((event) => {
+  return ai.resolve(JSON.parse(event.body));
 });
