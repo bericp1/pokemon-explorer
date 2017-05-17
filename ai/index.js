@@ -78,6 +78,8 @@ const resolve = function(body) {
     );
 };
 
-module.exports.resolve = resolve;
-module.exports.toErrorSpeechResponse = toErrorSpeechResponse;
-module.exports.toSpeechResponse = toSpeechResponse;
+module.exports = exports = {
+  resolve,
+  toErrorSpeechResponse,
+  toSpeechResponse
+};

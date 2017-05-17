@@ -8,6 +8,8 @@ const fetch = require('node-fetch'),
   checkStatus = httpUtils.checkStatus,
   parseJson = httpUtils.parseJSON;
 
+const aiUtils = require('../ai/utils');
+
 const PokemonTypeNotFoundError = require('./PokemonTypeNotFoundError'),
   PokemonColorNotFoundError = require('./PokemonColorNotFoundError');
 
@@ -150,7 +152,7 @@ const getRandomSpeciesByColor = function(color_name) {
 };
 
 const describeSpecies = function(species) {
-  let text = 'I picked ' + species.name + '! ',
+  let text = aiUtils.getRandomAffirmativePrefix() + ' I picked ' + species.name + '! ',
     pronoun = 'It';
 
   // Fix pronoun if necessary
@@ -223,21 +225,21 @@ const resolve = function(query) {
     return getRandomSpecies();
 };
 
-module.exports = {
-  doFetch: doFetch,
-  doFetchFromApi: doFetchFromApi,
-  readFromAPICache: readFromAPICache,
+module.exports = exports = {
+  doFetch,
+  doFetchFromApi,
+  readFromAPICache,
 
-  getRandomSpecies: getRandomSpecies,
-  getRandomSpeciesByColor: getRandomSpeciesByColor,
-  getRandomSpeciesByType: getRandomSpeciesByType,
-  getPokemonFromSpecies: getPokemonFromSpecies,
-  describeSpecies: describeSpecies,
+  getRandomSpecies,
+  getRandomSpeciesByColor,
+  getRandomSpeciesByType,
+  getPokemonFromSpecies,
+  describeSpecies,
 
-  getRandomPokemon: getRandomPokemon,
-  getRandomPokemonByType: getRandomPokemonByType,
-  getType: getType,
-  getTypeByName: getTypeByName,
+  getRandomPokemon,
+  getRandomPokemonByType,
+  getType,
+  getTypeByName,
 
-  resolve: resolve
+  resolve
 };
